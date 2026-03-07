@@ -14,7 +14,7 @@ exports.getProfile = async (req, res) => {
   }
 };
 
-exports.updateProfile = async (requ, res) => {
+exports.updateProfile = async (req, res) => {
   try {
     const userID = req.user.id;
     const { batch, branch, cgpa } = req.body;
