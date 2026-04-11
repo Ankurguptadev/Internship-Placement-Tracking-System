@@ -1,3 +1,4 @@
+const { use } = require("react");
 const db = require("../config/db");
 
 exports.getDrives = async (req, res) => {
@@ -201,7 +202,8 @@ exports.updateDrive = async (req, res) => {
     const companyId = companyRows[0].id;
 
     const [driveRows] = await db.query(
-      `Select id from drives where id=? and company_id=?`, [driveId, companyId],
+      `Select id from drives where id=? and company_id=?`,
+      [driveId, companyId],
     );
 
     if (driveRows.length === 0) {
@@ -248,10 +250,86 @@ exports.updateDrive = async (req, res) => {
     res.json({
       message: "Drive updated",
     });
-
   } catch (error) {
     res.status(500).json({
       error: error.message,
     });
+  }
+};
+
+exports.getApplicants = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const driveID = Number(req.params.driveID);
+    const [companyRows] = await db.querrry(
+      "Select id from companies where user_id=?",
+      [userId],
+    );
+
+    const companyId = companyRows[0].id;
+
+    const [driveRows] = await db.query(
+      "Select id from drives where id =? and company_id=?",
+      [driveID, companyId],
+    );
+
+    if (driveRows.length === 0) {
+      return res.status(404).json({
+        message: "Drive not found or not owned by the user",
+      });
+    }
+
+    const [rows] = await db.query(
+      `Select applications.id, applications.status, students.id as student_id, student.cgpa, users.email from applications join students on applications.student_id = students.id join users on students.user_id = users.id where applications.drive_id=?`,
+      [driveID],
+    );
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.createRound = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const driveID = Number(req.params.driveID);
+    const { name, seq_no } = req.body;
+
+    const [companyRows] = await db.querrry(
+      "Select id from companies where user_id=?",
+      [userId],
+    );
+
+    const companyId = companyRows[0].id;
+
+    const [driveRows] = await db.query(
+      "Select id from drives where id =? and company_id=?",
+      [driveID, companyId],
+    );
+
+    if (driveRows.length === 0) {
+      return res.status(404).json({
+        message: "Drive not found or not owned by the user",
+      });
+    }
+
+    const [existing] = await db.query(
+      "Select id from rounds where drive_id=? and seq_no=?",
+      [driveID, seq_no],
+    );
+
+    if (existing.length > 0) {
+      return res.status(400).json({ message: "Round sequence already exists" });
+    }
+    const [result] = await db.query(
+      "Insert into rounds (drive_id, name, seq_no) values(?,?,?)",
+    );
+
+    res.json({
+      message: "Round Created",
+      roundId: result.insertId,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };

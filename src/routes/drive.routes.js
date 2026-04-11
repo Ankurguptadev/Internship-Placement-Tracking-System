@@ -7,7 +7,12 @@ const { authenticate } = require("../middleware/auth.middleware");
 const { authorizeRoles } = require("../middleware/role.middleware");
 const { validate } = require("../middleware/validate.middleware");
 
-const { createDriveSchema, updateDriveSchema } = require("../validators/drive.validator");
+const {
+  createDriveSchema,
+  updateDriveSchema,
+} = require("../validators/drive.validator");
+
+const { createRoundSchema } = require("../validators/round.validator");
 
 // Student view
 
@@ -48,6 +53,21 @@ router.put(
   authorizeRoles("COMPANY"),
   validate(updateDriveSchema),
   driveController.updateDrive,
+);
+
+router.get(
+  "/:driveID/applications",
+  authenticate,
+  authorizeRoles("COMPANY"),
+  driveController.getApplicants,
+);
+
+router.post(
+  "/:driveId/rounds",
+  authenticate,
+  authorizeRoles("COMPANY"),
+  validate(createRoundSchema),
+  driveController.createRound,
 );
 
 module.exports = router;
