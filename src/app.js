@@ -8,6 +8,9 @@ const studentRoutes = require("./routes/student.routes");
 const driveRoutes = require("./routes/drive.routes");
 const companyRoutes = require("./routes/company.routes");
 const roundRoutes = require("./routes/round.routes");
+const offerRoutes = require("./routes/offer.routes");
+const announcementRoutes = require("./routes/announcement.routes");
+const applicationRoutes = require("./routes/application.routes");
 
 const app = express();
 
@@ -21,5 +24,8 @@ app.use("/api/v1/students", studentRoutes);
 app.use("/api/v1/drives", driveRoutes);
 app.use("/api/v1/company", companyRoutes);
 app.use("/api/v1/rounds", roundRoutes);
+app.use("/api/v1/offers", offerRoutes);
+app.use("/api/v1/announcements", announcementRoutes);
+app.use("/api/v1/applications", applicationRoutes);
 
 module.exports = app;
