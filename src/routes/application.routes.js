@@ -13,4 +13,11 @@ router.put(
   controller.updateStatus
 );
 
+router.get(
+  "/me",
+  authenticate,
+  authorizeRoles("STUDENT"),
+  controller.getMyApplications
+);
+
 module.exports = router;
