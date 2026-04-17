@@ -17,6 +17,6 @@ router.post("/", authenticate, authorizeRoles("COMPANY"), validate(createOfferSc
 
 router.get("/students/me", authenticate, authorizeRoles("STUDENT"), offerController.getStudentOffers);
 
-router.put("/:offerID", authenticate, authorizeRoles("STUDENT"), validate(updateOfferSchema), offerController.updateOfferStatus);
+router.put("/:offerId", authenticate, authorizeRoles("STUDENT"), validate(updateOfferSchema), offerController.updateOfferStatus);
 
 module.exports = router;

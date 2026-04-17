@@ -44,7 +44,7 @@ exports.createOffer = async (req, res) => {
     }
 
     const [result] = await db.query(
-      `Inset into offers (student_id, drive_id, package, status)
+      `Insert into offers (student_id, drive_id, package, status)
        values (?, ?, ?, 'PENDING')`,
       [student_id, drive_id, package],
     );

@@ -8,7 +8,7 @@ exports.createAnnouncement = async (req, res) => {
     const { title, message, drive_id } = req.body;
 
     await db.query(
-      `Inset into announcements
+      `Insert into announcements
        (title, message, drive_id, created_by)
        values (?, ?, ?, ?)`,
       [title, message, drive_id || null, userId]

@@ -306,7 +306,6 @@ exports.getApplicants = async (req, res) => {
        where applications.drive_id=?`,
       [driveId],
     );
-
     res.json(rows);
   } catch (error) {
     res.status(500).json({ error: error.message });

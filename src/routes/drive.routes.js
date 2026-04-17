@@ -56,7 +56,7 @@ router.put(
 );
 
 router.get(
-  "/:driveID/applications",
+  "/:driveId/applications",
   authenticate,
   authorizeRoles("COMPANY"),
   driveController.getApplicants,

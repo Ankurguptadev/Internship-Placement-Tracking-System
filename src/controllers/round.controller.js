@@ -32,7 +32,7 @@ exports.addResult = async (req, res) => {
     }
 
     await db.query(
-      `Inset into round_results (student_id, round_id, status)
+      `Insert into round_results (student_id, round_id, status)
        values (?, ?, ?)`,
       [student_id, roundId, status]
     );
