@@ -1,4 +1,3 @@
-const { use } = require("react");
 const db = require("../config/db");
 
 exports.getDrives = async (req, res) => {
@@ -6,7 +5,7 @@ exports.getDrives = async (req, res) => {
     const userId = req.user.id;
 
     const [studentRows] = await db.query(
-      "SELECT cgpa FROM students WHERE user_id = ?",
+      "Select cgpa from students where user_id = ?",
       [userId],
     );
 
@@ -19,25 +18,22 @@ exports.getDrives = async (req, res) => {
     const studentCgpa = studentRows[0].cgpa || 0;
 
     const [drives] = await db.query(
-      `SELECT
+      `Select
         drives.id,
         drives.title,
         drives.min_cgpa,
         drives.deadline,
         drives.status,
         companies.name AS company_name
-       FROM drives
-       JOIN companies
-       ON drives.company_id = companies.id
-       WHERE drives.status = 'OPEN'
-       AND drives.deadline >= CURDATE()
-       AND drives.min_cgpa <= ?`,
+       from drives
+       Join companies ON drives.company_id = companies.id
+       where drives.status = 'OPEN'
+       and drives.deadline >= CURDATE()
+       and drives.min_cgpa <= ?`,
       [studentCgpa],
     );
 
-    res.json({
-      drives,
-    });
+    res.json({ drives });
   } catch (error) {
     res.status(500).json({
       message: "Failed to fetch drives",
@@ -46,10 +42,13 @@ exports.getDrives = async (req, res) => {
   }
 };
 
+/*
+APPLY TO DRIVE
+*/
 exports.applyToDrive = async (req, res) => {
   try {
     const userId = req.user.id;
-    const driveId = parseInt(req.params.driveId);
+    const driveId = Number(req.params.driveId);
 
     if (isNaN(driveId)) {
       return res.status(400).json({
@@ -58,7 +57,7 @@ exports.applyToDrive = async (req, res) => {
     }
 
     const [studentRows] = await db.query(
-      "SELECT id FROM students WHERE user_id=?",
+      "Select id from students where user_id=?",
       [userId],
     );
 
@@ -70,7 +69,7 @@ exports.applyToDrive = async (req, res) => {
 
     const studentId = studentRows[0].id;
 
-    const [driveRows] = await db.query("SELECT status FROM drives WHERE id=?", [
+    const [driveRows] = await db.query("Select status from drives where id=?", [
       driveId,
     ]);
 
@@ -87,7 +86,7 @@ exports.applyToDrive = async (req, res) => {
     }
 
     const [existing] = await db.query(
-      "SELECT id FROM applications WHERE student_id=? AND drive_id=?",
+      "Select id from applications where student_id=? and drive_id=?",
       [studentId, driveId],
     );
 
@@ -98,9 +97,8 @@ exports.applyToDrive = async (req, res) => {
     }
 
     await db.query(
-      `INSERT INTO applications
-       (student_id, drive_id, status)
-       VALUES (?, ?, 'APPLIED')`,
+      `Insert into applications (student_id, drive_id, status)
+       values (?, ?, 'APPLIED')`,
       [studentId, driveId],
     );
 
@@ -115,13 +113,16 @@ exports.applyToDrive = async (req, res) => {
   }
 };
 
+/*
+CREATE DRIVE
+*/
 exports.createDrive = async (req, res) => {
   try {
     const userId = req.user.id;
     const { title, min_cgpa, deadline, status = "DRAFT" } = req.body;
 
     const [companyRows] = await db.query(
-      "SELECT id FROM companies WHERE user_id = ?",
+      "Select id from companies where user_id = ?",
       [userId],
     );
 
@@ -134,12 +135,13 @@ exports.createDrive = async (req, res) => {
     const companyId = companyRows[0].id;
 
     const [result] = await db.query(
-      `Insert into drives (company_id, title, min_cgpa, deadline, status) values (?, ?,?,?,?)`,
+      `Insert into drives (company_id, title, min_cgpa, deadline, status)
+       values (?, ?, ?, ?, ?)`,
       [companyId, title, min_cgpa, deadline, status],
     );
 
     res.json({
-      message: "Drive Created successfully",
+      message: "Drive created successfully",
       driveId: result.insertId,
     });
   } catch (error) {
@@ -149,12 +151,15 @@ exports.createDrive = async (req, res) => {
   }
 };
 
+/*
+GET COMPANY DRIVES
+*/
 exports.getCompanyDrives = async (req, res) => {
   try {
     const userId = req.user.id;
 
     const [companyRows] = await db.query(
-      "SELECT id FROM companies WHERE user_id = ?",
+      "Select id from companies where user_id = ?",
       [userId],
     );
 
@@ -165,7 +170,8 @@ exports.getCompanyDrives = async (req, res) => {
     }
 
     const companyId = companyRows[0].id;
-    const [rows] = await db.query(`Select * from drives where company_id=?`, [
+
+    const [rows] = await db.query("Select * from drives where company_id=?", [
       companyId,
     ]);
 
@@ -180,7 +186,7 @@ exports.getCompanyDrives = async (req, res) => {
 exports.updateDrive = async (req, res) => {
   try {
     const userId = req.user.id;
-    const driveId = parseInt(req.params.driveId);
+    const driveId = Number(req.params.driveId);
 
     if (isNaN(driveId)) {
       return res.status(400).json({
@@ -189,7 +195,7 @@ exports.updateDrive = async (req, res) => {
     }
 
     const [companyRows] = await db.query(
-      "SELECT id FROM companies WHERE user_id =?",
+      "Select id from companies where user_id=?",
       [userId],
     );
 
@@ -202,7 +208,7 @@ exports.updateDrive = async (req, res) => {
     const companyId = companyRows[0].id;
 
     const [driveRows] = await db.query(
-      `Select id from drives where id=? and company_id=?`,
+      "Select id from drives where id=? and company_id=?",
       [driveId, companyId],
     );
 
@@ -239,16 +245,16 @@ exports.updateDrive = async (req, res) => {
 
     if (fields.length === 0) {
       return res.status(400).json({
-        message: "No fields provided for update",
+        message: "No fields provided for Update",
       });
     }
 
     values.push(driveId);
 
-    await db.query(`Update drives set ${fields.join(", ")} where id=?`, values);
+    await db.query(`Update drives Set ${fields.join(", ")} where id=?`, values);
 
     res.json({
-      message: "Drive updated",
+      message: "Drive Updated",
     });
   } catch (error) {
     res.status(500).json({
@@ -257,20 +263,28 @@ exports.updateDrive = async (req, res) => {
   }
 };
 
+
 exports.getApplicants = async (req, res) => {
   try {
     const userId = req.user.id;
-    const driveID = Number(req.params.driveID);
-    const [companyRows] = await db.querrry(
+    const driveId = Number(req.params.driveId);
+
+    const [companyRows] = await db.query(
       "Select id from companies where user_id=?",
       [userId],
     );
 
+    if (companyRows.length === 0) {
+      return res.status(404).json({
+        message: "Company profile not found",
+      });
+    }
+
     const companyId = companyRows[0].id;
 
     const [driveRows] = await db.query(
-      "Select id from drives where id =? and company_id=?",
-      [driveID, companyId],
+      "Select id from drives where id=? and company_id=?",
+      [driveId, companyId],
     );
 
     if (driveRows.length === 0) {
@@ -280,31 +294,48 @@ exports.getApplicants = async (req, res) => {
     }
 
     const [rows] = await db.query(
-      `Select applications.id, applications.status, students.id as student_id, student.cgpa, users.email from applications join students on applications.student_id = students.id join users on students.user_id = users.id where applications.drive_id=?`,
-      [driveID],
+      `Select 
+        applications.id,
+        applications.status,
+        students.id AS student_id,
+        students.cgpa,
+        users.email
+       from applications
+       Join students ON applications.student_id = students.id
+       Join users ON students.user_id = users.id
+       where applications.drive_id=?`,
+      [driveId],
     );
+
     res.json(rows);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
+
 exports.createRound = async (req, res) => {
   try {
     const userId = req.user.id;
-    const driveID = Number(req.params.driveID);
+    const driveId = Number(req.params.driveId);
     const { name, seq_no } = req.body;
 
-    const [companyRows] = await db.querrry(
+    const [companyRows] = await db.query(
       "Select id from companies where user_id=?",
       [userId],
     );
 
+    if (companyRows.length === 0) {
+      return res.status(404).json({
+        message: "Company profile not found",
+      });
+    }
+
     const companyId = companyRows[0].id;
 
     const [driveRows] = await db.query(
-      "Select id from drives where id =? and company_id=?",
-      [driveID, companyId],
+      "Select id from drives where id=? and company_id=?",
+      [driveId, companyId],
     );
 
     if (driveRows.length === 0) {
@@ -315,18 +346,22 @@ exports.createRound = async (req, res) => {
 
     const [existing] = await db.query(
       "Select id from rounds where drive_id=? and seq_no=?",
-      [driveID, seq_no],
+      [driveId, seq_no],
     );
 
     if (existing.length > 0) {
-      return res.status(400).json({ message: "Round sequence already exists" });
+      return res.status(400).json({
+        message: "Round sequence already exists",
+      });
     }
+
     const [result] = await db.query(
-      "Insert into rounds (drive_id, name, seq_no) values(?,?,?)",
+      "Insert into rounds (drive_id, name, seq_no) values (?, ?, ?)",
+      [driveId, name, seq_no],
     );
 
     res.json({
-      message: "Round Created",
+      message: "Round created",
       roundId: result.insertId,
     });
   } catch (error) {
